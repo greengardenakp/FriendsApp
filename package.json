@@ -1,7 +1,7 @@
 {
-  "name": "friendsconnect",
+  "name": "friendsconnect-backend",
   "version": "1.0.0",
-  "description": "A social network platform",
+  "description": "FriendsConnect Social Network Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
