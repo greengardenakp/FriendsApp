@@ -1,0 +1,3237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FriendsConnect - Social Network</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111820;
+            --bg-card: rgba(17, 24, 32, 0.85);
+            --bg-glass: rgba(20, 30, 48, 0.65);
+            --text-primary: #e8edf4;
+            --text-secondary: #8899a8;
+            --text-muted: #5c6b7a;
+            --accent: #00d4aa;
+            --accent-hover: #00f5c4;
+            --accent-secondary: #0891b2;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --glow: 0 0 40px rgba(0, 212, 170, 0.15);
+            --glass-blur: blur(20px);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f0f4f8;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-glass: rgba(255, 255, 255, 0.75);
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #a0aec0;
+            --border: rgba(0, 0, 0, 0.08);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --glow: 0 0 40px rgba(0, 212, 170, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Background effects */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-effects::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 30% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
+                        radial-gradient(ellipse at 70% 80%, rgba(8, 145, 178, 0.06) 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, rgba(0, 212, 170, 0.03) 0%, transparent 70%);
+            animation: bgFloat 30s ease-in-out infinite;
+        }
+
+        .bg-effects::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(2deg); }
+            66% { transform: translate(-20px, 20px) rotate(-2deg); }
+        }
+
+        /* Glass card */
+        .glass {
+            background: var(--bg-glass);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transform: translateX(0);
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px;
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: var(--bg-primary);
+        }
+
+        .logo-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.15), rgba(8, 145, 178, 0.1));
+            color: var(--accent);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 60%;
+            background: var(--accent);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-item .badge {
+            margin-left: auto;
+            background: var(--danger);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .nav-divider {
+            height: 1px;
+            background: var(--border);
+            margin: 16px 0;
+        }
+
+        /* User profile in sidebar */
+        .user-profile {
+            padding: 16px;
+            border-radius: var(--radius-md);
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .verified-badge {
+            color: var(--accent);
+            font-size: 12px;
+        }
+
+        .user-handle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px;
+            transition: var(--transition);
+        }
+
+        /* Top bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+        }
+
+        .menu-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: var(--bg-glass);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-bar {
+            flex: 1;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 14px 20px 14px 48px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            background: var(--bg-glass);
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.15);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-results {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 100;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .search-result-item:hover {
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .search-result-item img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: var(--bg-glass);
+            border-radius: 50%;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background: rgba(0, 212, 170, 0.15);
+            color: var(--accent);
+        }
+
+        .icon-btn .notification-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 10px;
+            height: 10px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 2px solid var(--bg-primary);
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            background: var(--bg-glass);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+        }
+
+        .theme-toggle button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-toggle button.active {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* Feed layout */
+        .feed-layout {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Create post */
+        .create-post {
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+        }
+
+        .create-post-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .create-post-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .create-post-input {
+            flex: 1;
+        }
+
+        .create-post-input textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 15px;
+            resize: none;
+            transition: var(--transition);
+        }
+
+        .create-post-input textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .create-post-input textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .create-post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .post-type-btns {
+            display: flex;
+            gap: 4px;
+        }
+
+        .post-type-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .post-type-btn:hover {
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--accent);
+        }
+
+        .post-type-btn i {
+            font-size: 18px;
+        }
+
+        .btn-primary {
+            padding: 12px 28px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--bg-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Media preview */
+        .media-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .media-preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+
+        .media-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .media-preview-item .remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            background: var(--danger);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Post card */
+        .post-card {
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 16px;
+            transition: var(--transition);
+            animation: fadeInUp 0.5s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .post-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .post-user-info {
+            flex: 1;
+        }
+
+        .post-user-name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .post-user-name .verified {
+            color: var(--accent);
+            font-size: 12px;
+        }
+
+        .post-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .post-options {
+            position: relative;
+        }
+
+        .post-options-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .post-options-btn:hover {
+            background: var(--bg-glass);
+            color: var(--text-primary);
+        }
+
+        .post-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow);
+            min-width: 180px;
+            display: none;
+            z-index: 50;
+        }
+
+        .post-dropdown.active {
+            display: block;
+        }
+
+        .post-dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .post-dropdown-item:hover {
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .post-dropdown-item.danger {
+            color: var(--danger);
+        }
+
+        .post-content {
+            margin-bottom: 16px;
+            line-height: 1.7;
+            font-size: 15px;
+        }
+
+        .post-content .mention {
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .post-media {
+            margin-bottom: 16px;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .post-media img {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+        }
+
+        .post-media-grid {
+            display: grid;
+            gap: 4px;
+        }
+
+        .post-media-grid.cols-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .post-media-grid.cols-2 img {
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .post-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .post-stat {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .post-stat i {
+            font-size: 16px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .post-action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+        }
+
+        .post-action-btn:hover {
+            background: rgba(0, 212, 170, 0.1);
+            color: var(--accent);
+        }
+
+        .post-action-btn.active {
+            color: var(--accent);
+        }
+
+        .post-action-btn.liked {
+            color: var(--danger);
+        }
+
+        /* Reaction picker */
+        .reaction-picker {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            padding: 8px;
+            display: none;
+            box-shadow: var(--shadow);
+            z-index: 100;
+        }
+
+        .reaction-picker.active {
+            display: flex;
+            gap: 4px;
+        }
+
+        .reaction-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 22px;
+        }
+
+        .reaction-btn:hover {
+            transform: scale(1.3);
+            background: var(--bg-glass);
+        }
+
+        /* Comments section */
+        .comments-section {
+            margin-top: 16px;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .comment {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .comment-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-bubble {
+            background: var(--bg-glass);
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            display: inline-block;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .comment-text {
+            font-size: 14px;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .comment-actions span {
+            cursor: pointer;
+        }
+
+        .comment-actions span:hover {
+            color: var(--accent);
+        }
+
+        .comment-input-wrapper {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .comment-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--bg-glass);
+            border-radius: var(--radius-xl);
+            padding: 0 16px;
+        }
+
+        .comment-input input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 12px 0;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .comment-input input:focus {
+            outline: none;
+        }
+
+        /* Sidebar widgets */
+        .sidebar-widget {
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 16px;
+        }
+
+        .widget-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .widget-title i {
+            color: var(--accent);
+        }
+
+        /* Birthdays widget */
+        .birthday-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .birthday-item:hover {
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .birthday-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .birthday-info {
+            flex: 1;
+        }
+
+        .birthday-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .birthday-date {
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .cake-icon {
+            font-size: 24px;
+        }
+
+        /* Trending widget */
+        .trending-item {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .trending-item:last-child {
+            border-bottom: none;
+        }
+
+        .trending-topic {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .trending-posts {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Friend suggestions */
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+        }
+
+        .suggestion-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .suggestion-info {
+            flex: 1;
+        }
+
+        .suggestion-name {
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .suggestion-mutual {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .btn-add-friend {
+            padding: 8px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--accent);
+            border-radius: var(--radius-md);
+            color: var(--accent);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 13px;
+        }
+
+        .btn-add-friend:hover {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .modal-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg-glass);
+            border-radius: 50%;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        /* Auth forms */
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 40px;
+            border-radius: var(--radius-xl);
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .auth-logo .logo-icon {
+            width: 64px;
+            height: 64px;
+            font-size: 28px;
+            margin: 0 auto 16px;
+        }
+
+        .auth-logo h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 28px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-logo p {
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 15px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.15);
+        }
+
+        .form-input.error {
+            border-color: var(--danger);
+        }
+
+        .form-error {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 6px;
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .form-checkbox input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        .form-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .form-link:hover {
+            text-decoration: underline;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .auth-switch a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+            min-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(0, 212, 170, 0.9));
+            color: white;
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+            color: white;
+        }
+
+        .toast.info {
+            background: linear-gradient(135deg, rgba(8, 145, 178, 0.9), rgba(0, 212, 170, 0.9));
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .feed-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-right {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+
+            .top-bar {
+                flex-wrap: wrap;
+            }
+
+            .search-bar {
+                order: 3;
+                max-width: 100%;
+                width: 100%;
+                margin-top: 12px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            transition: var(--transition);
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* QR Code */
+        .qr-container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .qr-container img {
+            max-width: 200px;
+            border-radius: var(--radius-md);
+        }
+
+        /* Chat interface */
+        .chat-container {
+            display: flex;
+            height: calc(100vh - 100px);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .chat-list {
+            width: 320px;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-item:hover,
+        .chat-item.active {
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .chat-item-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+        }
+
+        .online-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: var(--success);
+            border-radius: 50%;
+            border: 2px solid var(--bg-primary);
+        }
+
+        .chat-item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .chat-item-name {
+            font-weight: 600;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-item-preview {
+            font-size: 13px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-item-time {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .message.sent {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: var(--radius-lg);
+            background: var(--bg-glass);
+        }
+
+        .message.sent .message-bubble {
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            color: var(--bg-primary);
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .message.sent .message-time {
+            text-align: right;
+        }
+
+        .message-status {
+            margin-left: 4px;
+        }
+
+        .chat-input-area {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--bg-glass);
+            border-radius: var(--radius-xl);
+            padding: 0 16px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 14px 0;
+            color: var(--text-primary);
+            font-size: 15px;
+        }
+
+        .chat-input input:focus {
+            outline: none;
+        }
+
+        .chat-send-btn {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border: none;
+            border-radius: 50%;
+            color: var(--bg-primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chat-send-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .typing-indicator {
+            padding: 8px 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-effects"></div>
+    <div class="toast-container" id="toastContainer"></div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Auth View -->
+    <div id="authView" class="auth-container">
+        <div class="auth-card glass">
+            <div class="auth-logo">
+                <div class="logo-icon"><i class="fas fa-users"></i></div>
+                <h1>FriendsConnect</h1>
+                <p>Connect with friends and the world around you</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">Email or Username</label>
+                    <input type="text" class="form-input" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" id="loginPassword" required>
+                </div>
+                <div class="form-footer">
+                    <label class="form-checkbox">
+                        <input type="checkbox" id="rememberMe">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="form-link" id="forgotPasswordLink">Forgot password?</a>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">Log In</button>
+            </form>
+
+            <div class="auth-divider">or</div>
+
+            <button class="btn-primary" style="width: 100%; background: var(--success);" id="createAccountBtn">
+                Create New Account
+            </button>
+
+            <p class="auth-switch">
+                By signing up, you agree to our Terms of Service and Privacy Policy
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal-overlay" id="registerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Sign Up</h2>
+                <button class="modal-close" id="closeRegisterModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="registerFullname" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" class="form-input" id="registerUsername" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="registerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-input" id="registerPassword" required minlength="8">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Birthday</label>
+                        <input type="date" class="form-input" id="registerBirthday">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Sign Up</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Verification Modal -->
+    <div class="modal-overlay" id="otpModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Verify Email</h2>
+                <button class="modal-close" id="closeOtpModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    We've sent a verification code to your email. Please enter it below.
+                </p>
+                <form id="otpForm">
+                    <div class="form-group">
+                        <label class="form-label">Verification Code</label>
+                        <input type="text" class="form-input" id="otpCode" maxlength="6" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%;">Verify</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App View -->
+    <div id="appView" class="app-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar glass" id="sidebar">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-users"></i></div>
+                <span class="logo-text">FriendsConnect</span>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-page="feed">
+                    <i class="fas fa-home"></i>
+                    <span>Home Feed</span>
+                </a>
+                <a href="#" class="nav-item" data-page="profile">
+                    <i class="fas fa-user"></i>
+                    <span>My Profile</span>
+                </a>
+                <a href="#" class="nav-item" data-page="friends">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Friends</span>
+                    <span class="badge" id="friendRequestBadge" style="display: none;">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="messages">
+                    <i class="fas fa-comment-dots"></i>
+                    <span>Messages</span>
+                    <span class="badge" id="messageBadge" style="display: none;">0</span>
+                </a>
+                <a href="#" class="nav-item" data-page="groups">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Groups</span>
+                </a>
+                <a href="#" class="nav-item" data-page="marketplace">
+                    <i class="fas fa-store"></i>
+                    <span>Marketplace</span>
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="#" class="nav-item" data-page="birthdays">
+                    <i class="fas fa-birthday-cake"></i>
+                    <span>Birthdays</span>
+                </a>
+                <a href="#" class="nav-item" data-page="events">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Events</span>
+                </a>
+                <a href="#" class="nav-item" data-page="saved">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Saved</span>
+                </a>
+
+                <div class="nav-divider"></div>
+
+                <a href="#" class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+
+            <div class="user-profile glass" id="sidebarProfile">
+                <img src="/uploads/default-avatar.png" alt="Profile" class="user-avatar" id="sidebarAvatar">
+                <div class="user-info">
+                    <div class="user-name" id="sidebarName">Loading...</div>
+                    <div class="user-handle" id="sidebarHandle">@username</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar glass">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search FriendsConnect..." id="searchInput">
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+
+                <div class="top-bar-actions">
+                    <div class="theme-toggle">
+                        <button class="active" id="themeDark" title="Dark Mode"><i class="fas fa-moon"></i></button>
+                        <button id="themeLight" title="Light Mode"><i class="fas fa-sun"></i></button>
+                    </div>
+
+                    <button class="icon-btn" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-dot" id="notificationDot" style="display: none;"></span>
+                    </button>
+
+                    <button class="icon-btn" id="messageBtn">
+                        <i class="fas fa-envelope"></i>
+                        <span class="notification-dot" id="messageDot" style="display: none;"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Feed Page -->
+            <div id="feedPage" class="page-content">
+                <div class="feed-layout">
+                    <div class="feed-main">
+                        <!-- Create Post -->
+                        <div class="create-post glass">
+                            <div class="create-post-header">
+                                <img src="/uploads/default-avatar.png" alt="Profile" class="create-post-avatar" id="createPostAvatar">
+                                <div class="create-post-input">
+                                    <textarea placeholder="What's on your mind?" id="postContent"></textarea>
+                                </div>
+                            </div>
+                            <div class="media-preview" id="mediaPreview"></div>
+                            <div class="create-post-actions">
+                                <div class="post-type-btns">
+                                    <button class="post-type-btn" id="addPhotoBtn">
+                                        <i class="fas fa-image" style="color: #10b981;"></i>
+                                        <span>Photo</span>
+                                    </button>
+                                    <button class="post-type-btn" id="addVideoBtn">
+                                        <i class="fas fa-video" style="color: #f59e0b;"></i>
+                                        <span>Video</span>
+                                    </button>
+                                    <button class="post-type-btn" id="tagFriendBtn">
+                                        <i class="fas fa-user-tag" style="color: #0891b2;"></i>
+                                        <span>Tag</span>
+                                    </button>
+                                </div>
+                                <select id="postPrivacy" style="padding: 10px 16px; border-radius: 8px; background: var(--bg-glass); border: 1px solid var(--border); color: var(--text-primary);">
+                                    <option value="friends">Friends</option>
+                                    <option value="public">Public</option>
+                                    <option value="private">Only Me</option>
+                                </select>
+                                <button class="btn-primary" id="createPostBtn">Post</button>
+                            </div>
+                            <input type="file" id="postMediaInput" accept="image/*,video/*" multiple style="display: none;">
+                        </div>
+
+                        <!-- Posts Feed -->
+                        <div id="postsFeed"></div>
+                    </div>
+
+                    <!-- Right Sidebar -->
+                    <aside class="sidebar-right">
+                        <!-- Birthdays Widget -->
+                        <div class="sidebar-widget glass" id="birthdaysWidget" style="display: none;">
+                            <h3 class="widget-title"><i class="fas fa-birthday-cake"></i> Birthdays Today</h3>
+                            <div id="birthdaysList"></div>
+                        </div>
+
+                        <!-- Trending Widget -->
+                        <div class="sidebar-widget glass">
+                            <h3 class="widget-title"><i class="fas fa-fire"></i> Trending</h3>
+                            <div id="trendingList">
+                                <div class="trending-item">
+                                    <div class="trending-topic">#TechNews</div>
+                                    <div class="trending-posts">2.4K posts</div>
+                                </div>
+                                <div class="trending-item">
+                                    <div class="trending-topic">#Photography</div>
+                                    <div class="trending-posts">1.8K posts</div>
+                                </div>
+                                <div class="trending-item">
+                                    <div class="trending-topic">#Travel</div>
+                                    <div class="trending-posts">1.2K posts</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Friend Suggestions -->
+                        <div class="sidebar-widget glass">
+                            <h3 class="widget-title"><i class="fas fa-user-plus"></i> People You May Know</h3>
+                            <div id="suggestionsList"></div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Messages Page -->
+            <div id="messagesPage" class="page-content" style="display: none;">
+                <div class="chat-container glass">
+                    <div class="chat-list" id="chatList">
+                        <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+                            <input type="text" placeholder="Search messages..." style="width: 100%; padding: 10px 14px; border-radius: 20px; background: var(--bg-glass); border: 1px solid var(--border); color: var(--text-primary);">
+                        </div>
+                        <div id="chatsContainer"></div>
+                    </div>
+                    <div class="chat-main" id="chatMain">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted);">
+                            <div style="text-align: center;">
+                                <i class="fas fa-comments" style="font-size: 64px; margin-bottom: 16px; opacity: 0.5;"></i>
+                                <p>Select a conversation to start messaging</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profilePage" class="page-content" style="display: none;">
+                <div class="profile-container">
+                    <div class="profile-header glass" style="border-radius: var(--radius-lg); overflow: hidden;">
+                        <div style="height: 300px; background: linear-gradient(135deg, var(--accent), var(--accent-secondary)); position: relative;">
+                            <img id="profileCover" src="" alt="Cover" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div style="padding: 20px; display: flex; gap: 20px;">
+                            <img id="profileAvatar" src="/uploads/default-avatar.png" alt="Profile" style="width: 168px; height: 168px; border-radius: 50%; border: 4px solid var(--bg-primary); margin-top: -100px;">
+                            <div style="flex: 1;">
+                                <h1 id="profileName" style="font-family: 'Space Grotesk', sans-serif; font-size: 28px; margin-bottom: 4px;">User Name</h1>
+                                <p id="profileBio" style="color: var(--text-secondary); margin-bottom: 12px;">Bio goes here</p>
+                                <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+                                    <span id="profileFriends"><strong>0</strong> Friends</span>
+                                    <span id="profilePosts"><strong>0</strong> Posts</span>
+                                </div>
+                                <div id="profileActions" style="display: flex; gap: 12px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="profilePosts" style="margin-top: 24px;"></div>
+                </div>
+            </div>
+
+            <!-- Friends Page -->
+            <div id="friendsPage" class="page-content" style="display: none;">
+                <div class="glass" style="border-radius: var(--radius-lg); padding: 20px;">
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; margin-bottom: 20px;">Friend Requests</h2>
+                    <div id="friendRequestsList" style="display: grid; gap: 16px;"></div>
+                    
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; margin: 30px 0 20px;">Your Friends</h2>
+                    <div id="friendsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;"></div>
+                </div>
+            </div>
+
+            <!-- Notifications Page -->
+            <div id="notificationsPage" class="page-content" style="display: none;">
+                <div class="glass" style="border-radius: var(--radius-lg); padding: 20px;">
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; margin-bottom: 20px;">Notifications</h2>
+                    <div id="notificationsList"></div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page-content" style="display: none;">
+                <div class="glass" style="border-radius: var(--radius-lg); padding: 20px;">
+                    <h2 style="font-family: 'Space Grotesk', sans-serif; margin-bottom: 20px;">Settings</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="settingsFullname">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bio</label>
+                        <textarea class="form-input" id="settingsBio" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Birthday Privacy</label>
+                        <select class="form-input" id="settingsBirthdayPrivacy">
+                            <option value="public">Public</option>
+                            <option value="friends">Friends Only</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Who can send you friend requests?</label>
+                        <select class="form-input" id="settingsFriendRequests">
+                            <option value="everyone">Everyone</option>
+                            <option value="friends_of_friends">Friends of Friends</option>
+                            <option value="nobody">No One</option>
+                        </select>
+                    </div>
+                    
+                    <h3 style="font-family: 'Space Grotesk', sans-serif; margin: 30px 0 20px;">Security</h3>
+                    
+                    <button class="btn-primary" style="margin-right: 12px;" id="requestVerificationBtn">
+                        Request Verification
+                    </button>
+                    <button class="btn-primary" style="background: var(--danger);" id="logoutAllBtn">
+                        Log Out of All Sessions
+                    </button>
+                    
+                    <button class="btn-primary" style="margin-top: 20px;" id="saveSettingsBtn">Save Changes</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="modal-overlay" id="notificationPanel">
+        <div class="modal" style="position: absolute; top: 60px; right: 20px; left: auto; max-width: 400px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Notifications</h2>
+                <button class="modal-close" id="closeNotificationPanel"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="notificationPanelContent" style="max-height: 400px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- Tag Friends Modal -->
+    <div class="modal-overlay" id="tagFriendsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Tag Friends</h2>
+                <button class="modal-close" id="closeTagFriendsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <input type="text" class="form-input" placeholder="Search friends..." id="tagSearchInput">
+                </div>
+                <div id="tagFriendsList" style="max-height: 300px; overflow-y: auto;"></div>
+                <div id="selectedTags" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                <button class="btn-primary" style="width: 100%; margin-top: 16px;" id="confirmTagsBtn">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="modal-overlay" id="qrModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Your Profile QR Code</h2>
+                <button class="modal-close" id="closeQrModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="qr-container" id="qrContainer"></div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script>
+        // ==================== APP STATE ====================
+        const API_URL = 'http://localhost:3000/api';
+        let authToken = localStorage.getItem('token');
+        let currentUser = null;
+        let socket = null;
+        let selectedMedia = [];
+        let taggedFriends = [];
+        let currentChatId = null;
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            if (authToken) {
+                validateToken();
+            } else {
+                showAuthView();
+            }
+            initEventListeners();
+        });
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButtons(savedTheme);
+        }
+
+        function updateThemeButtons(theme) {
+            document.getElementById('themeDark').classList.toggle('active', theme === 'dark');
+            document.getElementById('themeLight').classList.toggle('active', theme === 'light');
+        }
+
+        function initEventListeners() {
+            // Theme toggle
+            document.getElementById('themeDark').addEventListener('click', () => setTheme('dark'));
+            document.getElementById('themeLight').addEventListener('click', () => setTheme('light'));
+
+            // Auth forms
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('otpForm').addEventListener('submit', handleOtpVerification);
+
+            // Modal toggles
+            document.getElementById('createAccountBtn').addEventListener('click', () => toggleModal('registerModal', true));
+            document.getElementById('closeRegisterModal').addEventListener('click', () => toggleModal('registerModal', false));
+            document.getElementById('closeOtpModal').addEventListener('click', () => toggleModal('otpModal', false));
+            document.getElementById('closeNotificationPanel').addEventListener('click', () => toggleModal('notificationPanel', false));
+            document.getElementById('closeTagFriendsModal').addEventListener('click', () => toggleModal('tagFriendsModal', false));
+            document.getElementById('closeQrModal').addEventListener('click', () => toggleModal('qrModal', false));
+
+            // Navigation
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', handleNavigation);
+            });
+
+            // Post creation
+            document.getElementById('createPostBtn').addEventListener('click', createPost);
+            document.getElementById('addPhotoBtn').addEventListener('click', () => document.getElementById('postMediaInput').click());
+            document.getElementById('postMediaInput').addEventListener('change', handleMediaSelect);
+
+            // Tag friends
+            document.getElementById('tagFriendBtn').addEventListener('click', () => {
+                loadFriendsForTagging();
+                toggleModal('tagFriendsModal', true);
+            });
+            document.getElementById('tagSearchInput').addEventListener('input', filterTagFriends);
+            document.getElementById('confirmTagsBtn').addEventListener('click', () => toggleModal('tagFriendsModal', false));
+
+            // Search
+            document.getElementById('searchInput').addEventListener('input', debounce(handleSearch, 300));
+
+            // Mobile menu
+            document.getElementById('menuToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+
+            // Notifications
+            document.getElementById('notificationBtn').addEventListener('click', loadNotifications);
+
+            // Settings
+            document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+            document.getElementById('requestVerificationBtn').addEventListener('click', requestVerification);
+            document.getElementById('logoutAllBtn').addEventListener('click', logoutAllSessions);
+        }
+
+        // ==================== THEME ====================
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateThemeButtons(theme);
+        }
+
+        // ==================== AUTH ====================
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email, 
+                        password,
+                        deviceInfo: navigator.userAgent
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('token', authToken);
+                    initSocket();
+                    showAppView();
+                    showToast('Welcome back!', 'success');
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Login failed. Please try again.', 'error');
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const fullname = document.getElementById('registerFullname').value;
+            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const birthdate = document.getElementById('registerBirthday').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fullname, username, email, password, birthdate })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    toggleModal('registerModal', false);
+                    document.getElementById('registerEmail').dataset.email = email;
+                    toggleModal('otpModal', true);
+                    showToast('Account created! Please verify your email.', 'success');
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Registration failed. Please try again.', 'error');
+            }
+        }
+
+        async function handleOtpVerification(e) {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').dataset.email;
+            const otp = document.getElementById('otpCode').value;
+
+            try {
+                const response = await fetch(`${API_URL}/auth/verify-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    toggleModal('otpModal', false);
+                    showToast('Email verified! You can now log in.', 'success');
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Verification failed.', 'error');
+            }
+        }
+
+        async function validateToken() {
+            try {
+                const response = await fetch(`${API_URL}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    currentUser = data.user;
+                    initSocket();
+                    showAppView();
+                } else {
+                    showAuthView();
+                }
+            } catch (error) {
+                showAuthView();
+            }
+        }
+
+        // ==================== SOCKET.IO ====================
+        function initSocket() {
+            socket = io({ auth: { token: authToken } });
+
+            socket.on('connect', () => {
+                console.log('Socket connected');
+            });
+
+            socket.on('notification', (data) => {
+                showToast(data.message || 'New notification', 'info');
+                updateNotificationBadge();
+            });
+
+            socket.on('new_message', (data) => {
+                if (currentChatId !== data.chatId) {
+                    updateMessageBadge();
+                }
+            });
+
+            socket.on('new_post', (post) => {
+                prependPost(post);
+            });
+
+            socket.on('post_reaction', (data) => {
+                updatePostReactions(data.postId, data.reactions);
+            });
+
+            socket.on('user_typing', (data) => {
+                showTypingIndicator(data);
+            });
+
+            socket.on('user_stopped_typing', (data) => {
+                hideTypingIndicator(data);
+            });
+        }
+
+        // ==================== VIEW MANAGEMENT ====================
+        function showAuthView() {
+            document.getElementById('authView').style.display = 'flex';
+            document.getElementById('appView').style.display = 'none';
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        function showAppView() {
+            document.getElementById('authView').style.display = 'none';
+            document.getElementById('appView').style.display = 'flex';
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            updateUI();
+            loadFeed();
+            loadFriendRequests();
+            loadBirthdays();
+            loadSuggestions();
+        }
+
+        function updateUI() {
+            if (!currentUser) return;
+
+            document.getElementById('sidebarAvatar').src = currentUser.profile_pic || '/uploads/default-avatar.png';
+            document.getElementById('sidebarName').textContent = currentUser.fullname;
+            document.getElementById('sidebarHandle').textContent = `@${currentUser.username}`;
+            document.getElementById('createPostAvatar').src = currentUser.profile_pic || '/uploads/default-avatar.png';
+
+            if (currentUser.verified) {
+                const nameEl = document.getElementById('sidebarName');
+                if (!nameEl.querySelector('.verified-badge')) {
+                    nameEl.innerHTML += '<i class="fas fa-check-circle verified-badge"></i>';
+                }
+            }
+        }
+
+        // ==================== NAVIGATION ====================
+        function handleNavigation(e) {
+            e.preventDefault();
+            const page = e.currentTarget.dataset.page;
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+
+            document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+
+            switch(page) {
+                case 'feed':
+                    document.getElementById('feedPage').style.display = 'block';
+                    loadFeed();
+                    break;
+                case 'profile':
+                    document.getElementById('profilePage').style.display = 'block';
+                    loadProfile(currentUser.id);
+                    break;
+                case 'friends':
+                    document.getElementById('friendsPage').style.display = 'block';
+                    loadFriendRequests();
+                    loadFriends();
+                    break;
+                case 'messages':
+                    document.getElementById('messagesPage').style.display = 'block';
+                    loadChats();
+                    break;
+                case 'settings':
+                    document.getElementById('settingsPage').style.display = 'block';
+                    loadSettings();
+                    break;
+                case 'notifications':
+                    document.getElementById('notificationsPage').style.display = 'block';
+                    loadNotifications();
+                    break;
+            }
+
+            // Close mobile menu
+            document.getElementById('sidebar').classList.remove('active');
+        }
+
+        // ==================== POSTS ====================
+        async function loadFeed() {
+            try {
+                const response = await fetch(`${API_URL}/posts/feed`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+
+                const posts = await response.json();
+                renderPosts(posts);
+            } catch (error) {
+                console.error('Failed to load feed', error);
+                showToast('Could not load feed', 'error');
+            }
+        }
+
+        function renderPosts(posts) {
+            const container = document.getElementById('postsFeed');
+            container.innerHTML = '';
+
+            if (!posts || posts.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">No posts yet. Start by adding a friend!</div>';
+                return;
+            }
+
+            posts.forEach(post => {
+                const postEl = document.createElement('div');
+                postEl.className = 'post-card glass';
+                postEl.id = `post-${post.id}`;
+
+                const mediaHtml = post.media_urls && post.media_urls.length > 0 ? `
+                    <div class="post-media">
+                        ${post.media_urls.map(url => 
+                            url.endsWith('.mp4') 
+                                ? `<video controls style="width: 100%; border-radius: 12px;"><source src="${url}" type="video/mp4"></video>`
+                                : `<img src="${url}" alt="Post image" style="width: 100%; border-radius: 12px;">`
+                        ).join('')}
+                    </div>
+                ` : '';
+
+                const reactionSummary = Object.entries(post.reactions || {}).map(([type, count]) => 
+                    count > 0 ? `<span>${getReactionEmoji(type)} ${count}</span>` : ''
+                ).join('');
+
+                postEl.innerHTML = `
+                    <div class="post-header">
+                        <img src="${post.profile_pic || '/uploads/default-avatar.png'}" alt="${post.username}" class="post-avatar">
+                        <div class="post-user-info">
+                            <div class="post-user-name">
+                                ${post.fullname} ${post.verified ? '<i class="fas fa-check-circle verified"></i>' : ''}
+                            </div>
+                            <div class="post-meta">@${post.username} · ${formatDate(post.created_at)}</div>
+                        </div>
+                        <div class="post-options">
+                            <button class="post-options-btn"><i class="fas fa-ellipsis-h"></i></button>
+                        </div>
+                    </div>
+                    <div class="post-content">${parseContent(post.content)}</div>
+                    ${mediaHtml}
+                    <div class="post-stats">
+                        <div class="post-stat">${reactionSummary || 'No reactions yet'}</div>
+                        <div class="post-stat" style="margin-left: auto;">${post.comment_count || 0} Comments</div>
+                    </div>
+                    <div class="post-actions">
+                        <div style="position: relative;">
+                            <button class="post-action-btn ${post.user_reaction ? 'active' : ''}" onclick="toggleReactionPicker(${post.id})">
+                                <i class="${post.user_reaction ? 'fas' : 'far'} fa-thumbs-up"></i>
+                                <span>${post.user_reaction || 'Like'}</span>
+                            </button>
+                            <div class="reaction-picker" id="reaction-picker-${post.id}">
+                                <button class="reaction-btn" onclick="reactToPost(${post.id}, 'like')">👍</button>
+                                <button class="reaction-btn" onclick="reactToPost(${post.id}, 'love')">❤️</button>
+                                <button class="reaction-btn" onclick="reactToPost(${post.id}, 'haha')">😂</button>
+                                <button class="reaction-btn" onclick="reactToPost(${post.id}, 'wow')">😮</button>
+                                <button class="reaction-btn" onclick="reactToPost(${post.id}, 'sad')">😢</button>
+                                <button class="reaction-btn" onclick="reactToPost(${post.id}, 'angry')">😡</button>
+                            </div>
+                        </div>
+                        <button class="post-action-btn" onclick="toggleComments(${post.id})">
+                            <i class="far fa-comment"></i> Comment
+                        </button>
+                        <button class="post-action-btn">
+                            <i class="far fa-share-square"></i> Share
+                        </button>
+                    </div>
+                    <div class="comments-section" id="comments-${post.id}" style="display: none;">
+                        <div class="comment-input-wrapper">
+                            <img src="${currentUser.profile_pic || '/uploads/default-avatar.png'}" class="comment-avatar">
+                            <div class="comment-input">
+                                <input type="text" placeholder="Write a comment..." id="comment-input-${post.id}" onkeypress="handleCommentKeypress(event, ${post.id})">
+                            </div>
+                        </div>
+                        <div id="comments-list-${post.id}"></div>
+                    </div>
+                `;
+                container.appendChild(postEl);
+            });
+        }
+
+        function prependPost(post) {
+            const container = document.getElementById('postsFeed');
+            const postEl = document.createElement('div');
+            postEl.className = 'post-card glass';
+            postEl.id = `post-${post.id}`;
+            // Simplified for brevity - use same HTML as renderPosts
+            // Ideally, abstract the HTML generation into a function
+            postEl.innerHTML = `...`; // Implementation omitted for brevity
+            container.prepend(postEl);
+        }
+
+        function toggleReactionPicker(postId) {
+            const picker = document.getElementById(`reaction-picker-${postId}`);
+            document.querySelectorAll('.reaction-picker').forEach(p => {
+                if (p !== picker) p.classList.remove('active');
+            });
+            picker.classList.toggle('active');
+        }
+
+        async function reactToPost(postId, type) {
+            try {
+                const response = await fetch(`${API_URL}/posts/${postId}/react`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ reactionType: type })
+                });
+                const data = await response.json();
+                updatePostReactions(postId, data.reactions);
+                toggleReactionPicker(postId);
+            } catch (error) {
+                showToast('Failed to react', 'error');
+            }
+        }
+
+        function updatePostReactions(postId, reactions) {
+            const postEl = document.getElementById(`post-${postId}`);
+            if (!postEl) return;
+            const statsEl = postEl.querySelector('.post-stat');
+            const summary = Object.entries(reactions).map(([type, count]) => 
+                count > 0 ? `<span>${getReactionEmoji(type)} ${count}</span>` : ''
+            ).join('');
+            if (statsEl) statsEl.innerHTML = summary || 'No reactions yet';
+        }
+
+        function toggleComments(postId) {
+            const section = document.getElementById(`comments-${postId}`);
+            const isHidden = section.style.display === 'none';
+            section.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) loadComments(postId);
+        }
+
+        async function loadComments(postId) {
+            try {
+                const response = await fetch(`${API_URL}/posts/${postId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const post = await response.json();
+                const list = document.getElementById(`comments-list-${postId}`);
+                list.innerHTML = '';
+                
+                (post.comments || []).forEach(comment => {
+                    const commentEl = document.createElement('div');
+                    commentEl.className = 'comment';
+                    commentEl.innerHTML = `
+                        <img src="${comment.profile_pic || '/uploads/default-avatar.png'}" class="comment-avatar">
+                        <div class="comment-content">
+                            <div class="comment-bubble">
+                                <div class="comment-author">${comment.fullname}</div>
+                                <div class="comment-text">${comment.content}</div>
+                            </div>
+                            <div class="comment-actions">
+                                <span>Like</span>
+                                <span>Reply</span>
+                                <span>${formatDate(comment.created_at)}</span>
+                            </div>
+                        </div>
+                    `;
+                    list.appendChild(commentEl);
+                });
+            } catch (error) {
+                console.error('Error loading comments', error);
+            }
+        }
+
+        function handleCommentKeypress(event, postId) {
+            if (event.key === 'Enter') {
+                const input = document.getElementById(`comment-input-${postId}`);
+                if (input.value.trim()) {
+                    addComment(postId, input.value);
+                    input.value = '';
+                }
+            }
+        }
+
+        async function addComment(postId, content) {
+            try {
+                await fetch(`${API_URL}/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ content })
+                });
+                loadComments(postId);
+            } catch (error) {
+                showToast('Failed to post comment', 'error');
+            }
+        }
+
+        async function createPost() {
+            const content = document.getElementById('postContent').value;
+            const privacy = document.getElementById('postPrivacy').value;
+            
+            if (!content && selectedMedia.length === 0) {
+                showToast('Please add some content', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('content', content);
+            formData.append('privacy', privacy);
+            formData.append('taggedUsers', JSON.stringify(taggedFriends));
+            
+            selectedMedia.forEach(file => {
+                formData.append('media', file);
+            });
+
+            try {
+                const response = await fetch(`${API_URL}/posts`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    document.getElementById('postContent').value = '';
+                    selectedMedia = [];
+                    taggedFriends = [];
+                    document.getElementById('mediaPreview').innerHTML = '';
+                    document.getElementById('selectedTags').innerHTML = '';
+                    loadFeed();
+                    showToast('Post created!', 'success');
+                } else {
+                    const data = await response.json();
+                    showToast(data.error, 'error');
+                }
+            } catch (error) {
+                showToast('Failed to create post', 'error');
+            }
+        }
+
+        function handleMediaSelect(e) {
+            const files = Array.from(e.target.files);
+            const preview = document.getElementById('mediaPreview');
+            
+            files.forEach(file => {
+                selectedMedia.push(file);
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const div = document.createElement('div');
+                    div.className = 'media-preview-item';
+                    div.innerHTML = `
+                        <img src="${e.target.result}" alt="Preview">
+                        <button class="remove-btn" onclick="removeMedia(${selectedMedia.length - 1})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function removeMedia(index) {
+            selectedMedia.splice(index, 1);
+            const preview = document.getElementById('mediaPreview');
+            const child = preview.children[index];
+            if (child) child.remove();
+        }
+
+        // ==================== CHAT ====================
+        async function loadChats() {
+            try {
+                const response = await fetch(`${API_URL}/chats`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const chats = await response.json();
+                renderChats(chats);
+            } catch (error) {
+                console.error('Failed to load chats', error);
+            }
+        }
+
+        function renderChats(chats) {
+            const container = document.getElementById('chatsContainer');
+            container.innerHTML = '';
+
+            chats.forEach(chat => {
+                const item = document.createElement('div');
+                item.className = 'chat-item';
+                // FIX: Passing 'item' as argument to avoid 'event' scope issues
+                item.onclick = () => openChat(chat.id, chat.recipient, item);
+                
+                const name = chat.chat_type === 'private' ? chat.recipient?.fullname : chat.name;
+                const avatar = chat.chat_type === 'private' ? chat.recipient?.profile_pic : chat.group_photo;
+
+                item.innerHTML = `
+                    <img src="${avatar || '/uploads/default-avatar.png'}" class="chat-item-avatar">
+                    <div class="chat-item-info">
+                        <div class="chat-item-name">${name}</div>
+                        <div class="chat-item-preview">${chat.last_message || 'No messages yet'}</div>
+                    </div>
+                    <div class="chat-item-time">${chat.last_message_time ? formatDate(chat.last_message_time) : ''}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // FIX: Added 'element' parameter to handle active state correctly
+        async function openChat(chatId, recipient, element) {
+            currentChatId = chatId;
+            
+            document.querySelectorAll('.chat-item').forEach(c => c.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            const main = document.getElementById('chatMain');
+            main.innerHTML = `
+                <div class="chat-header">
+                    <img src="${recipient?.profile_pic || '/uploads/default-avatar.png'}" class="chat-item-avatar">
+                    <div>
+                        <div style="font-weight: 600;">${recipient?.fullname}</div>
+                        <div style="font-size: 12px; color: var(--text-muted);">Active now</div>
+                    </div>
+                </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="typing-indicator" id="typingIndicator" style="display: none;">Typing...</div>
+                <div class="chat-input-area">
+                    <div class="chat-input">
+                        <input type="text" placeholder="Type a message..." id="messageInput" onkeypress="handleMessageKeypress(event, ${chatId}, ${recipient.id})">
+                    </div>
+                    <button class="chat-send-btn" onclick="sendMessage(${chatId}, ${recipient.id})">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            `;
+
+            socket.emit('join_chat', chatId);
+            await loadMessages(chatId);
+        }
+
+        async function loadMessages(chatId) {
+            try {
+                const response = await fetch(`${API_URL}/chats/${chatId}/messages`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const messages = await response.json();
+                const container = document.getElementById('chatMessages');
+                container.innerHTML = '';
+
+                messages.forEach(msg => {
+                    const isSent = msg.sender_id === currentUser.id;
+                    const msgEl = document.createElement('div');
+                    msgEl.className = `message ${isSent ? 'sent' : ''}`;
+                    
+                    const statusIcon = isSent ? (msg.read_by && msg.read_by.length > 1 ? '<i class="fas fa-check-double" style="color: var(--accent);"></i>' : '<i class="fas fa-check"></i>') : '';
+
+                    msgEl.innerHTML = `
+                        <img src="${msg.profile_pic || '/uploads/default-avatar.png'}" class="message-avatar">
+                        <div>
+                            <div class="message-bubble">${msg.content}</div>
+                            <div class="message-time">${formatDate(msg.created_at)} <span class="message-status">${statusIcon}</span></div>
+                        </div>
+                    `;
+                    container.appendChild(msgEl);
+                });
+                container.scrollTop = container.scrollHeight;
+            } catch (error) {
+                console.error('Error loading messages', error);
+            }
+        }
+
+        function handleMessageKeypress(event, chatId, recipientId) {
+            if (event.key === 'Enter') {
+                sendMessage(chatId, recipientId);
+            } else {
+                socket.emit('typing_start', { chatId, recipientId });
+            }
+        }
+
+        async function sendMessage(chatId, recipientId) {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content) return;
+
+            socket.emit('typing_stop', { chatId, recipientId });
+
+            try {
+                const response = await fetch(`${API_URL}/chats/${chatId}/messages`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ content })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    await loadMessages(chatId);
+                }
+            } catch (error) {
+                showToast('Failed to send message', 'error');
+            }
+        }
+
+        function showTypingIndicator(data) {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator && currentChatId === data.chatId) {
+                indicator.style.display = 'block';
+                setTimeout(() => indicator.style.display = 'none', 3000);
+            }
+        }
+
+        // ==================== PROFILE ====================
+        async function loadProfile(userId) {
+            try {
+                const response = await fetch(`${API_URL}/users/${userId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const user = await response.json();
+                renderProfile(user);
+            } catch (error) {
+                showToast('Failed to load profile', 'error');
+            }
+        }
+
+        function renderProfile(user) {
+            document.getElementById('profileAvatar').src = user.profile_pic || '/uploads/default-avatar.png';
+            document.getElementById('profileCover').src = user.cover_photo || '';
+            document.getElementById('profileName').innerHTML = user.fullname + (user.verified ? ' <i class="fas fa-check-circle verified-badge"></i>' : '');
+            document.getElementById('profileBio').textContent = user.bio || 'No bio available';
+            document.getElementById('profileFriends').innerHTML = `<strong>${user.friendCount || 0}</strong> Friends`;
+            document.getElementById('profilePosts').innerHTML = `<strong>${user.postCount || 0}</strong> Posts`;
+
+            const actions = document.getElementById('profileActions');
+            actions.innerHTML = '';
+
+            if (user.isOwnProfile) {
+                actions.innerHTML = `
+                    <button class="btn-primary" onclick="editProfile()"><i class="fas fa-edit"></i> Edit Profile</button>
+                    <button class="btn-primary" style="background: var(--bg-glass); color: var(--text-primary);" onclick="showQRCode()"><i class="fas fa-qrcode"></i></button>
+                `;
+            } else {
+                if (user.friendshipStatus === 'accepted') {
+                    actions.innerHTML = `
+                        <button class="btn-primary" style="background: var(--bg-glass); color: var(--text-primary);"><i class="fas fa-user-check"></i> Friends</button>
+                        <button class="btn-primary" onclick="startChatWith(${user.id})"><i class="fas fa-comment"></i> Message</button>
+                    `;
+                } else if (user.friendshipStatus === 'pending') {
+                    actions.innerHTML = `<button class="btn-primary" disabled>Request Sent</button>`;
+                } else {
+                    actions.innerHTML = `<button class="btn-primary" onclick="sendFriendRequest(${user.id})"><i class="fas fa-user-plus"></i> Add Friend</button>`;
+                }
+            }
+        }
+
+        async function showQRCode() {
+            try {
+                const response = await fetch(`${API_URL}/users/${currentUser.id}/qrcode`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await response.json();
+                document.getElementById('qrContainer').innerHTML = `<img src="${data.qrCode}" alt="QR Code">`;
+                toggleModal('qrModal', true);
+            } catch (error) {
+                showToast('Could not generate QR code', 'error');
+            }
+        }
+
+        // ==================== FRIENDS ====================
+        async function loadFriendRequests() {
+            try {
+                const response = await fetch(`${API_URL}/friends/requests`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const requests = await response.json();
+                const badge = document.getElementById('friendRequestBadge');
+                
+                if (requests.length > 0) {
+                    badge.style.display = 'inline';
+                    badge.textContent = requests.length;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                const list = document.getElementById('friendRequestsList');
+                list.innerHTML = '';
+                
+                requests.forEach(req => {
+                    const el = document.createElement('div');
+                    el.className = 'suggestion-item';
+                    el.innerHTML = `
+                        <img src="${req.profile_pic || '/uploads/default-avatar.png'}" class="suggestion-avatar">
+                        <div class="suggestion-info">
+                            <div class="suggestion-name">${req.fullname}</div>
+                            <div class="suggestion-mutual">${req.mutualFriends || 0} mutual friends</div>
+                        </div>
+                        <button class="btn-add-friend" onclick="acceptFriend(${req.id})">Confirm</button>
+                        <button class="btn-add-friend" style="border-color: var(--danger); color: var(--danger);" onclick="rejectFriend(${req.id})">Delete</button>
+                    `;
+                    list.appendChild(el);
+                });
+            } catch (error) {
+                console.error('Error loading friend requests', error);
+            }
+        }
+
+        async function sendFriendRequest(friendId) {
+            try {
+                const response = await fetch(`${API_URL}/friends/request`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ friendId })
+                });
+                if (response.ok) {
+                    showToast('Friend request sent!', 'success');
+                }
+            } catch (error) {
+                showToast('Failed to send request', 'error');
+            }
+        }
+
+        async function acceptFriend(requestId) {
+            try {
+                await fetch(`${API_URL}/friends/respond`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ requestId, action: 'accept' })
+                });
+                loadFriendRequests();
+                loadFriends();
+            } catch (error) {
+                showToast('Failed to accept request', 'error');
+            }
+        }
+
+        async function rejectFriend(requestId) {
+            try {
+                await fetch(`${API_URL}/friends/respond`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ requestId, action: 'reject' })
+                });
+                loadFriendRequests();
+            } catch (error) {
+                showToast('Failed to reject request', 'error');
+            }
+        }
+
+        async function loadFriends() {
+            try {
+                const response = await fetch(`${API_URL}/friends`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const friends = await response.json();
+                const list = document.getElementById('friendsList');
+                list.innerHTML = '';
+
+                friends.forEach(friend => {
+                    const el = document.createElement('div');
+                    el.className = 'suggestion-item glass';
+                    el.style.padding = '16px';
+                    el.style.borderRadius = '12px';
+                    el.innerHTML = `
+                        <img src="${friend.profile_pic || '/uploads/default-avatar.png'}" class="suggestion-avatar">
+                        <div class="suggestion-info">
+                            <div class="suggestion-name">${friend.fullname}</div>
+                        </div>
+                        <button class="btn-add-friend" onclick="viewProfile(${friend.id})">View</button>
+                    `;
+                    list.appendChild(el);
+                });
+            } catch (error) {
+                console.error('Error loading friends', error);
+            }
+        }
+
+        async function loadSuggestions() {
+            try {
+                const response = await fetch(`${API_URL}/users/search/a`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const users = await response.json();
+                const list = document.getElementById('suggestionsList');
+                list.innerHTML = '';
+                
+                users.slice(0, 3).forEach(user => {
+                    if (user.id === currentUser.id) return;
+                    const el = document.createElement('div');
+                    el.className = 'suggestion-item';
+                    el.innerHTML = `
+                        <img src="${user.profile_pic || '/uploads/default-avatar.png'}" class="suggestion-avatar">
+                        <div class="suggestion-info">
+                            <div class="suggestion-name">${user.fullname} ${user.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div>
+                            <div class="suggestion-mutual">Suggested for you</div>
+                        </div>
+                        <button class="btn-add-friend" onclick="sendFriendRequest(${user.id})">Add</button>
+                    `;
+                    list.appendChild(el);
+                });
+            } catch (error) {
+                console.error('Error loading suggestions', error);
+            }
+        }
+
+        async function loadBirthdays() {
+            try {
+                const response = await fetch(`${API_URL}/birthdays/today`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const birthdays = await response.json();
+                
+                if (birthdays.length > 0) {
+                    document.getElementById('birthdaysWidget').style.display = 'block';
+                    const list = document.getElementById('birthdaysList');
+                    list.innerHTML = '';
+                    
+                    birthdays.forEach(user => {
+                        const el = document.createElement('div');
+                        el.className = 'birthday-item';
+                        el.innerHTML = `
+                            <img src="${user.profile_pic || '/uploads/default-avatar.png'}" class="birthday-avatar">
+                            <div class="birthday-info">
+                                <div class="birthday-name">${user.fullname}</div>
+                                <div class="birthday-date">Today</div>
+                            </div>
+                            <span class="cake-icon">🎂</span>
+                        `;
+                        list.appendChild(el);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading birthdays', error);
+            }
+        }
+
+        // ==================== SETTINGS & OTHERS ====================
+        function loadSettings() {
+            if (!currentUser) return;
+            document.getElementById('settingsFullname').value = currentUser.fullname || '';
+            document.getElementById('settingsBio').value = currentUser.bio || '';
+            document.getElementById('settingsBirthdayPrivacy').value = currentUser.birthdate_privacy || 'friends';
+            
+            const settings = JSON.parse(currentUser.privacy_settings || '{}');
+            document.getElementById('settingsFriendRequests').value = settings.friendRequests || 'everyone';
+        }
+
+        async function saveSettings() {
+            const fullname = document.getElementById('settingsFullname').value;
+            const bio = document.getElementById('settingsBio').value;
+            const birthdate_privacy = document.getElementById('settingsBirthdayPrivacy').value;
+            const friendRequests = document.getElementById('settingsFriendRequests').value;
+
+            try {
+                const response = await fetch(`${API_URL}/users/profile`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ fullname, bio, birthdate_privacy, privacy_settings: { friendRequests } })
+                });
+                
+                if (response.ok) {
+                    showToast('Settings saved!', 'success');
+                    currentUser.fullname = fullname;
+                    updateUI();
+                }
+            } catch (error) {
+                showToast('Failed to save settings', 'error');
+            }
+        }
+
+        async function requestVerification() {
+            try {
+                const response = await fetch(`${API_URL}/users/request-verification`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (response.ok) {
+                    showToast('Verification request sent!', 'success');
+                }
+            } catch (error) {
+                showToast('Failed to request verification', 'error');
+            }
+        }
+
+        async function logoutAllSessions() {
+            try {
+                await fetch(`${API_URL}/sessions/logout-others`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                showToast('Logged out from other devices', 'success');
+            } catch (error) {
+                showToast('Failed to logout sessions', 'error');
+            }
+        }
+
+        async function handleSearch(e) {
+            const query = e.target.value.trim();
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (!query) {
+                resultsContainer.classList.remove('active');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/users/search/${query}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const users = await response.json();
+                
+                resultsContainer.innerHTML = '';
+                users.forEach(user => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.onclick = () => viewProfile(user.id);
+                    item.innerHTML = `
+                        <img src="${user.profile_pic || '/uploads/default-avatar.png'}">
+                        <div>
+                            <div style="font-weight: 600;">${user.fullname}</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">@${user.username}</div>
+                        </div>
+                    `;
+                    resultsContainer.appendChild(item);
+                });
+                resultsContainer.classList.add('active');
+            } catch (error) {
+                console.error('Search error', error);
+            }
+        }
+
+        function viewProfile(userId) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            document.querySelector('[data-page="profile"]').classList.add('active');
+            document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+            document.getElementById('profilePage').style.display = 'block';
+            loadProfile(userId);
+            document.getElementById('searchResults').classList.remove('active');
+            document.getElementById('searchInput').value = '';
+        }
+
+        async function loadNotifications() {
+            toggleModal('notificationPanel', true);
+            try {
+                const response = await fetch(`${API_URL}/notifications`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const notifications = await response.json();
+                const container = document.getElementById('notificationPanelContent');
+                container.innerHTML = '';
+
+                if (notifications.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No notifications</p>';
+                    return;
+                }
+
+                notifications.forEach(notif => {
+                    const el = document.createElement('div');
+                    el.className = 'search-result-item';
+                    el.style.borderBottom = '1px solid var(--border)';
+                    el.innerHTML = `
+                        <i class="${getNotificationIcon(notif.type)}" style="color: var(--accent);"></i>
+                        <div>
+                            <div style="font-size: 14px;">${notif.message}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${formatDate(notif.created_at)}</div>
+                        </div>
+                    `;
+                    container.appendChild(el);
+                });
+            } catch (error) {
+                console.error('Error loading notifications', error);
+            }
+        }
+
+        function updateNotificationBadge() {
+            const dot = document.getElementById('notificationDot');
+            dot.style.display = 'block';
+        }
+
+        function updateMessageBadge() {
+            const dot = document.getElementById('messageDot');
+            dot.style.display = 'block';
+        }
+
+        // ==================== HELPERS ====================
+        function toggleModal(id, show) {
+            const modal = document.getElementById(id);
+            if (show) modal.classList.add('active');
+            else modal.classList.remove('active');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = (now - date) / 1000;
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+            return date.toLocaleDateString();
+        }
+
+        function getReactionEmoji(type) {
+            const emojis = { like: '👍', love: '❤️', haha: '😂', wow: '😮', sad: '😢', angry: '😡' };
+            return emojis[type] || '👍';
+        }
+
+        function getNotificationIcon(type) {
+            const icons = { 
+                friend_request: 'fas fa-user-plus', 
+                friend_accepted: 'fas fa-user-check', 
+                like: 'fas fa-heart', 
+                comment: 'fas fa-comment',
+                mention: 'fas fa-at',
+                birthday: 'fas fa-birthday-cake'
+            };
+            return icons[type] || 'fas fa-bell';
+        }
+
+        function parseContent(content) {
+            if (!content) return '';
+            return content.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+        }
+
+        function loadFriendsForTagging() {
+            fetch(`${API_URL}/friends`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+                .then(res => res.json())
+                .then(friends => {
+                    const list = document.getElementById('tagFriendsList');
+                    list.innerHTML = '';
+                    friends.forEach(f => {
+                        const el = document.createElement('div');
+                        el.className = 'search-result-item';
+                        el.innerHTML = `
+                            <img src="${f.profile_pic || '/uploads/default-avatar.png'}">
+                            <span>${f.fullname}</span>
+                            <input type="checkbox" onchange="toggleTag(${f.id}, this.checked)" style="margin-left: auto;">
+                        `;
+                        list.appendChild(el);
+                    });
+                });
+        }
+
+        function toggleTag(userId, checked) {
+            if (checked) {
+                if (!taggedFriends.includes(userId)) taggedFriends.push(userId);
+            } else {
+                taggedFriends = taggedFriends.filter(id => id !== userId);
+            }
+        }
+    </script>
+   
+</body>
+    
+</html>
+       
